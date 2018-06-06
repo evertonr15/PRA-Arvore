@@ -163,9 +163,9 @@ public class GUI {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				campoDeEntradaDoUsuarioPaginacao.setText("50");
-				campoDeEntradaDoUsuarioListas.setText("2");
+				campoDeEntradaDoUsuarioListas.setText("4");
 				paginaAtual = 0;
-				Object[] entradaDoUsuário = {"Quantidade de registros por página: ", campoDeEntradaDoUsuarioPaginacao, "Quantidade de listas - Mínimo 2: ", campoDeEntradaDoUsuarioListas};// acão relacionado ao botão consultar base
+				Object[] entradaDoUsuário = {"Quantidade de registros por página: ", campoDeEntradaDoUsuarioPaginacao, "Quantidade máxima de filhos por nó - Mínimo 2: ", campoDeEntradaDoUsuarioListas};// acão relacionado ao botão consultar base
 
 				Integer opt = JOptionPane.showOptionDialog(null, entradaDoUsuário, "Consulta", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, new String[]{"Ordenar por código do cliente", "Ordenar por código do cliente + Data do pedido"}, null); // Caixa de diálogo para consulta dos dados
 				int tipoDeOrdenacao;

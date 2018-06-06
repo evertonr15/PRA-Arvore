@@ -215,7 +215,7 @@ public class GerenciadorDeArquivo {
 		}
 	}
 	
-	public void recuperarArquivoGUIIndexados(int quantidadeDeListas, int tipoDeOrdenacao) {// Recupera todo o arquivo
+	public void recuperarArquivoGUIIndexados(int quantidadeDeFilhosMaximos, int tipoDeOrdenacao) {// Recupera todo o arquivo
 		String linhaAtual = null;
 		String[] registroDoPedido;
 		List<Produtos> listaDeProdutos = new ArrayList<>();
@@ -248,7 +248,7 @@ public class GerenciadorDeArquivo {
 				pedidos.add(new AbstractMap.SimpleEntry<>(Integer.valueOf(registroDoPedido[0]), new Pedido(Integer.valueOf(registroDoPedido[0]), new Vendedor(Integer.valueOf(registroDoPedido[2])), new Cliente(Integer.valueOf(registroDoPedido[1])), data, listaDeProdutos)));
 			}			
 
-			ArvoreB<Float, Pedido> bTree = new ArvoreB<>();
+			ArvoreB<Float, Pedido> bTree = new ArvoreB<>(quantidadeDeFilhosMaximos);
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			for (Entry<?, Pedido> codigoPedido : pedidos){
 				bTree.put((tipoDeOrdenacao == 1 ? codigoPedido.getValue().getCodigoCliente() : Float.valueOf(codigoPedido.getValue().getCodigoCliente()+"."+(sdf.parse(codigoPedido.getValue().getDataPedido())).getTime())), codigoPedido.getValue());

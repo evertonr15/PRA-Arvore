@@ -1,6 +1,6 @@
 public class ArvoreB<Key extends Comparable<Key>, Value> {
 	// Máximo de filhos por nó = M-1
-	private static final int M = 4;
+	private static int quantidadeDeFilhosMaximos = 4;
 
 	private No topoDaArvore; // Topo da árvore
 	private int alturaDaArvore; // Altura da árvore
@@ -9,7 +9,7 @@ public class ArvoreB<Key extends Comparable<Key>, Value> {
 	// Nós da árvore
 	private static final class No {
 		private int qtdFilhos; // quantidade de filhos
-		private Entry[] filhos = new Entry[M]; // lista de filhos
+		private Entry[] filhos = new Entry[quantidadeDeFilhosMaximos]; // lista de filhos
 
 		// cria um nó com k filhos
 		private No(int k) {
@@ -34,7 +34,8 @@ public class ArvoreB<Key extends Comparable<Key>, Value> {
 	/**
 	 * Inicializa árvore vazia
 	 */
-	public ArvoreB() {
+	public ArvoreB(int quantidadeDeFilhosMaximosParam) {
+		quantidadeDeFilhosMaximos = quantidadeDeFilhosMaximosParam < 2 ? quantidadeDeFilhosMaximos : quantidadeDeFilhosMaximosParam;
 		topoDaArvore = new No(0);
 	}
 
@@ -139,17 +140,17 @@ public class ArvoreB<Key extends Comparable<Key>, Value> {
 			no.filhos[i] = no.filhos[i - 1];
 		no.filhos[j] = estruturaDeNos;
 		no.qtdFilhos++;
-		if (no.qtdFilhos < M)
+		if (no.qtdFilhos < quantidadeDeFilhosMaximos)
 			return null;
 		else
 			return divideNoAoMeio(no);
 	}
 
 	private No divideNoAoMeio(No noParaDividir) {
-		No no = new No(M / 2);
-		noParaDividir.qtdFilhos = M / 2;
-		for (int j = 0; j < M / 2; j++)
-			no.filhos[j] = noParaDividir.filhos[M / 2 + j];
+		No no = new No(quantidadeDeFilhosMaximos / 2);
+		noParaDividir.qtdFilhos = quantidadeDeFilhosMaximos / 2;
+		for (int j = 0; j < quantidadeDeFilhosMaximos / 2; j++)
+			no.filhos[j] = noParaDividir.filhos[quantidadeDeFilhosMaximos / 2 + j];
 		return no;
 	}
 
