@@ -330,15 +330,17 @@ public class GerenciadorDeArquivo {
 			}
 			posicaoLinhaAtual = 0;
 			while ((informacaoLinhaAtual = buffReaderIndexado.readLine()) != null && posicaoLinhaAtual < qtdRegistroPagina) { //Enquanto não atingir a quantidade de linhas da paginação e ainda tiver linhas
-				GUI.fimPaginacao = false;// Informa que não está na última página
-				registroDoPedido = informacaoLinhaAtual.split(";");
+				if(!informacaoLinhaAtual.isEmpty()){
+					GUI.fimPaginacao = false;// Informa que não está na última página
+					registroDoPedido = informacaoLinhaAtual.split(";");
 
-				retornoDaLeitura.append("\nCódigo do pedido: " + registroDoPedido[0]);
-				retornoDaLeitura.append("\nCódigo do vendedor: " + registroDoPedido[2]);
-				retornoDaLeitura.append("\nData do pedido: " + registroDoPedido[3]);
-				retornoDaLeitura.append("\nCódigo do Cliente: " + registroDoPedido[1]);
-				retornoDaLeitura.append("\n");
-				posicaoLinhaAtual++;
+					retornoDaLeitura.append("\nCódigo do pedido: " + registroDoPedido[0]);
+					retornoDaLeitura.append("\nCódigo do vendedor: " + registroDoPedido[2]);
+					retornoDaLeitura.append("\nData do pedido: " + registroDoPedido[3]);
+					retornoDaLeitura.append("\nCódigo do Cliente: " + registroDoPedido[1]);
+					retornoDaLeitura.append("\n");
+					posicaoLinhaAtual++;
+				}
 			}
 			GUI.campoDeRetornoPaginacao.setText(retornoDaLeitura.toString());
 		} catch (Exception ex) {

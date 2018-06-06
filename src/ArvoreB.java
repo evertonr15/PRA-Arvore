@@ -1,232 +1,200 @@
 public class ArvoreB<Key extends Comparable<Key>, Value> {
-	// max children per B-tree node = M-1
-	// (must be even and greater than 2)
+	// Máximo de filhos por nó = M-1
 	private static final int M = 4;
 
-	private Node root; // root of the B-tree
-	private int height; // height of the B-tree
-	private int n; // number of key-value pairs in the B-tree
+	private No topoDaArvore; // Topo da árvore
+	private int alturaDaArvore; // Altura da árvore
+	private int qtdNos; // número de nós da árvore
 
-	// helper B-tree node data type
-	private static final class Node {
-		private int m; // number of children
-		private Entry[] children = new Entry[M]; // the array of children
+	// Nós da árvore
+	private static final class No {
+		private int qtdFilhos; // quantidade de filhos
+		private Entry[] filhos = new Entry[M]; // lista de filhos
 
-		// create a node with k children
-		private Node(int k) {
-			m = k;
+		// cria um nó com k filhos
+		private No(int k) {
+			qtdFilhos = k;
 		}
 	}
 
-	// internal nodes: only use key and next
-	// external nodes: only use key and value
+	// Nós internos: usa somente chave e próximo
+	// Nós externos: usa somente chave e valor
 	private static class Entry {
-		private Comparable key;
-		private final Object val;
-		private Node next; // helper field to iterate over array entries
+		private Comparable chave;
+		private final Object valor;
+		private No proximo;
 
-		public Entry(Comparable key, Object val, Node next) {
-			this.key = key;
-			this.val = val;
-			this.next = next;
+		public Entry(Comparable chave, Object valor, No proximo) {
+			this.chave = chave;
+			this.valor = valor;
+			this.proximo = proximo;
 		}
 	}
 
 	/**
-	 * Initializes an empty B-tree.
+	 * Inicializa árvore vazia
 	 */
 	public ArvoreB() {
-		root = new Node(0);
+		topoDaArvore = new No(0);
+	}
+
+	public boolean ehVazia() {
+		return qtdeDeNosDaArvore() == 0;
 	}
 
 	/**
-	 * Returns true if this symbol table is empty.
 	 * 
-	 * @return {@code true} if this symbol table is empty; {@code false}
-	 *         otherwise
+	 * @return quantidade de nós da árvore
 	 */
-	public boolean isEmpty() {
-		return size() == 0;
+	public int qtdeDeNosDaArvore() {
+		return qtdNos;
 	}
 
-	/**
-	 * Returns the number of key-value pairs in this symbol table.
-	 * 
-	 * @return the number of key-value pairs in this symbol table
-	 */
-	public int size() {
-		return n;
-	}
-
-	/**
-	 * Returns the height of this B-tree (for debugging).
-	 *
-	 * @return the height of this B-tree
-	 */
-	public int height() {
-		return height;
+	public int getAlturaDaArvore() {
+		return alturaDaArvore;
 	}
 
 	/**
 	 * Returns the value associated with the given key.
 	 *
-	 * @param key
-	 *            the key
-	 * @return the value associated with the given key if the key is in the
-	 *         symbol table and {@code null} if the key is not in the symbol
-	 *         table
-	 * @throws IllegalArgumentException
-	 *             if {@code key} is {@code null}
+	 * @param chave
+	 * @return valor associado à chave
 	 */
-	public Value get(Key key) {
-		if (key == null)
-			throw new IllegalArgumentException("argument to get() is null");
-		return search(root, key, height);
+	public Value get(Key chave) {
+		if (chave == null)
+			throw new IllegalArgumentException("chave nula");
+		return busca(topoDaArvore, chave, alturaDaArvore);
 	}
 
-	private Value search(Node x, Key key, int ht) {
-		Entry[] children = x.children;
+	private Value busca(No no, Key chave, int altura) {
+		Entry[] nosFilhos = no.filhos;
 
-		// external node
-		if (ht == 0) {
-			for (int j = 0; j < x.m; j++) {
-				if (eq(key, children[j].key))
-					return (Value) children[j].val;
+		// nó externo
+		if (altura == 0) {
+			for (int j = 0; j < no.qtdFilhos; j++) {
+				if (eq(chave, nosFilhos[j].chave))
+					return (Value) nosFilhos[j].valor;
 			}
 		}
 
-		// internal node
+		// no interno
 		else {
-			for (int j = 0; j < x.m; j++) {
-				if (j + 1 == x.m || less(key, children[j + 1].key))
-					return search(children[j].next, key, ht - 1);
+			for (int j = 0; j < no.qtdFilhos; j++) {
+				if (j + 1 == no.qtdFilhos || less(chave, nosFilhos[j + 1].chave))
+					return busca(nosFilhos[j].proximo, chave, altura - 1);
 			}
 		}
 		return null;
 	}
 
 	/**
-	 * Inserts the key-value pair into the symbol table, overwriting the old
-	 * value with the new value if the key is already in the symbol table. If
-	 * the value is {@code null}, this effectively deletes the key from the
-	 * symbol table.
+	 * Insere valor na tabela
 	 *
-	 * @param key
-	 *            the key
-	 * @param val
-	 *            the value
-	 * @throws IllegalArgumentException
-	 *             if {@code key} is {@code null}
+	 * @param chave
+	 * @param valor
 	 */
-	public void put(Key key, Value val) {
-		if (key == null)
-			throw new IllegalArgumentException("argument key to put() is null");
-		Node u = insert(root, key, val, height);
-		n++;
-		if (u == null)
+	public void put(Key chave, Value valor) {
+		if (chave == null)
+			throw new IllegalArgumentException("chave nula");
+		No no = insereNaArvore(topoDaArvore, chave, valor, alturaDaArvore);
+		qtdNos++;
+		if (no == null)
 			return;
 
-		// need to split root
-		Node t = new Node(2);
-		t.children[0] = new Entry(root.children[0].key, null, root);
-		t.children[1] = new Entry(u.children[0].key, null, u);
-		root = t;
-		height++;
+		// precisa dividir o topo
+		No novoNo = new No(2);
+		novoNo.filhos[0] = new Entry(topoDaArvore.filhos[0].chave, null, topoDaArvore);
+		novoNo.filhos[1] = new Entry(no.filhos[0].chave, null, no);
+		topoDaArvore = novoNo;
+		alturaDaArvore++;
 	}
 
-	private Node insert(Node h, Key key, Value val, int ht) {
+	private No insereNaArvore(No no, Key chave, Value valor, int altura) {
 		int j;
-		Entry t = new Entry(key, val, null);
+		Entry estruturaDeNos = new Entry(chave, valor, null);
 
-		// external node
-		if (ht == 0) {
-			for (j = 0; j < h.m; j++) {
-				if (less(key, h.children[j].key))
+		// Nó externo
+		if (altura == 0) {
+			for (j = 0; j < no.qtdFilhos; j++) {
+				if (less(chave, no.filhos[j].chave))
 					break;
 			}
 		}
 
-		// internal node
+		// Nó interno
 		else {
-			for (j = 0; j < h.m; j++) {
-				if ((j + 1 == h.m) || less(key, h.children[j + 1].key)) {
-					Node u = insert(h.children[j++].next, key, val, ht - 1);
-					if (u == null)
+			for (j = 0; j < no.qtdFilhos; j++) {
+				if ((j + 1 == no.qtdFilhos) || less(chave, no.filhos[j + 1].chave)) {
+					No noInserido = insereNaArvore(no.filhos[j++].proximo, chave, valor, altura - 1);
+					if (noInserido == null)
 						return null;
-					t.key = u.children[0].key;
-					t.next = u;
+					estruturaDeNos.chave = noInserido.filhos[0].chave;
+					estruturaDeNos.proximo = noInserido;
 					break;
 				}
 			}
 		}
 
-		for (int i = h.m; i > j; i--)
-			h.children[i] = h.children[i - 1];
-		h.children[j] = t;
-		h.m++;
-		if (h.m < M)
+		for (int i = no.qtdFilhos; i > j; i--)
+			no.filhos[i] = no.filhos[i - 1];
+		no.filhos[j] = estruturaDeNos;
+		no.qtdFilhos++;
+		if (no.qtdFilhos < M)
 			return null;
 		else
-			return split(h);
+			return divideNoAoMeio(no);
 	}
 
-	// split node in half
-	private Node split(Node h) {
-		Node t = new Node(M / 2);
-		h.m = M / 2;
+	private No divideNoAoMeio(No noParaDividir) {
+		No no = new No(M / 2);
+		noParaDividir.qtdFilhos = M / 2;
 		for (int j = 0; j < M / 2; j++)
-			t.children[j] = h.children[M / 2 + j];
-		return t;
+			no.filhos[j] = noParaDividir.filhos[M / 2 + j];
+		return no;
 	}
 
-	/**
-	 * Returns a string representation of this B-tree (for debugging).
-	 *
-	 * @return a string representation of this B-tree.
-	 */
 	public String toString() {
-		return toString(root, height, "") + "\n";
+		return toString(topoDaArvore, alturaDaArvore, "") + "\n";
 	}
 
-	private String toString(Node h, int ht, String indent) {
+	private String toString(No h, int ht, String indent) {
 		StringBuilder valores = new StringBuilder();
-		Entry[] children = h.children;
+		Entry[] children = h.filhos;
 
 		if (ht == 0) {
-			for (int j = 0; j < h.m; j++) {
-				valores.append(((Pedido)children[j].val).toString() + "\n");
+			for (int j = 0; j < h.qtdFilhos; j++) {
+				valores.append(((Pedido)children[j].valor).toString() + "\n");
 			}
 		} else {
-			for (int j = 0; j < h.m; j++) {
-				valores.append(toString(children[j].next, ht - 1, ""));
+			for (int j = 0; j < h.qtdFilhos; j++) {
+				valores.append(toString(children[j].proximo, ht - 1, ""));
 			}
 		}
 		return valores.toString();
 	}
 	
 	public String toStringOld() {
-		return toStringOld(root, height, "") + "\n";
+		return toStringOld(topoDaArvore, alturaDaArvore, "") + "\n";
 	}
 	
-	private String toStringOld(Node h, int ht, String indent) {
+	private String toStringOld(No h, int ht, String indent) {
 		StringBuilder s = new StringBuilder();
-		Entry[] children = h.children;
+		Entry[] children = h.filhos;
 
 		if (ht == 0) {
-			for (int j = 0; j < h.m; j++) {
-				s.append(indent + children[j].key + " " + children[j].val + "\n");
+			for (int j = 0; j < h.qtdFilhos; j++) {
+				s.append(indent + children[j].chave + " " + children[j].valor + "\n");
 			}
 		} else {
-			for (int j = 0; j < h.m; j++) {
+			for (int j = 0; j < h.qtdFilhos; j++) {
 				if (j > 0)
-					s.append(indent + "(" + children[j].key + ")\n");
-				s.append(toStringOld(children[j].next, ht - 1, indent + "     "));
+					s.append(indent + "(" + children[j].chave + ")\n");
+				s.append(toStringOld(children[j].proximo, ht - 1, indent + "     "));
 			}
 		}
 		return s.toString();
 	}
 
-	// comparison functions - make Comparable instead of Key to avoid casts
 	private boolean less(Comparable k1, Comparable k2) {
 		return k1.compareTo(k2) < 0;
 	}
