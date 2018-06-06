@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -159,6 +160,16 @@ public class GerenciadorDeArquivo {
 			e.printStackTrace();
 		}
 	}
+	
+	public void salvaPedidoIndexado(BTree<Float, Pedido> bTree) { // Escreve no arquivo por meio de uma lista de pedidos
+		try {
+			if (buffWriterIndexado != null) {
+				buffWriterIndexado.write(bTree.toString());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	public void abrirArquivoParaLeitura() {
 		try {
@@ -281,27 +292,19 @@ public class GerenciadorDeArquivo {
 				pedidos.add(new AbstractMap.SimpleEntry<>(Integer.valueOf(registroDoPedido[0]), new Pedido(Integer.valueOf(registroDoPedido[0]), new Vendedor(Integer.valueOf(registroDoPedido[2])), new Cliente(Integer.valueOf(registroDoPedido[1])), data, listaDeProdutos)));
 			}			
 
-			BTree<Integer, Pedido> bTree = new BTree<>();
+			BTree<Float, Pedido> bTree = new BTree<>();
+			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			for (Entry<?, Pedido> codigoPedido : pedidos){
-				codigoPedido.getValue();
-				bTree.put(codigoPedido.getValue().getCodigoCliente(), codigoPedido.getValue());
+				bTree.put((tipoDeOrdenacao == 1 ? codigoPedido.getValue().getCodigoCliente() : Float.valueOf(codigoPedido.getValue().getCodigoCliente()+"."+(sdf.parse(codigoPedido.getValue().getDataPedido())).getTime())), codigoPedido.getValue());
 			}
 			
 			GerenciadorDeArquivo arquivoDeVendasIndexado = new GerenciadorDeArquivo();
 			arquivoDeVendasIndexado.criarEAbrirArquivoParaEscritaIndexado();
-			String informacoesDoPedido = "";
-			
-			buffWriterIndexado.write(informacoesDoPedido);
-			buffWriterIndexado.newLine();
-			
+			arquivoDeVendasIndexado.salvaPedidoIndexado(bTree);
 			arquivoDeVendasIndexado.fecharArquivoParaEscritaIndexado();
 			
-			
-			StdOut.println(bTree);
+			System.out.println(bTree.toStringOld());
 			pedidos.clear();
-		    
-			//Ordena indexacao = new Ordena(tipoDeOrdenacao);
-			//indexacao.misturaLista(listasDePedidos);
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();
