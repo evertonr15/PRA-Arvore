@@ -1,4 +1,4 @@
-public class BTree<Key extends Comparable<Key>, Value> {
+public class ArvoreB<Key extends Comparable<Key>, Value> {
 	// max children per B-tree node = M-1
 	// (must be even and greater than 2)
 	private static final int M = 4;
@@ -35,7 +35,7 @@ public class BTree<Key extends Comparable<Key>, Value> {
 	/**
 	 * Initializes an empty B-tree.
 	 */
-	public BTree() {
+	public ArvoreB() {
 		root = new Node(0);
 	}
 

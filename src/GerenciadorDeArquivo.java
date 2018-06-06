@@ -161,7 +161,7 @@ public class GerenciadorDeArquivo {
 		}
 	}
 	
-	public void salvaPedidoIndexado(BTree<Float, Pedido> bTree) { // Escreve no arquivo por meio de uma lista de pedidos
+	public void salvaPedidoIndexado(ArvoreB<Float, Pedido> bTree) { // Escreve no arquivo por meio de uma lista de pedidos
 		try {
 			if (buffWriterIndexado != null) {
 				buffWriterIndexado.write(bTree.toString());
@@ -214,50 +214,6 @@ public class GerenciadorDeArquivo {
 			e.printStackTrace();
 		}
 	}
-
-	/*
-	 * registroDoPedido:
-	 * 
-	 * 0-codigoPedido 
-	 * 1-cliente.getCodigoCliente() 
-	 * 2-vendedor.getCodigoVendedor()
-	 * 3-dataDoPedido 
-	 * 4-totalDaVenda 
-	 * 5-produtos.toString()
-	 */
-	public void recuperarArquivoGUI() {// Recupera todo o arquivo
-		String linhaAtual = null;
-		DecimalFormat decimalFormater = new DecimalFormat("#,###.00");
-		StringBuilder retornoDaLeitura = new StringBuilder();
-		String[] registroDoPedido;
-		String produtosToString;
-		String[] produtos;
-		String[] produtosSplit;
-		try {
-			while ((linhaAtual = buffReader.readLine()) != null) {// enquanto não ler até a ultima linha
-				registroDoPedido = linhaAtual.split(";");
-
-				retornoDaLeitura.append("\nCódigo do pedido: " + registroDoPedido[0]);
-				retornoDaLeitura.append("\nCódigo do vendedor: " + registroDoPedido[2]);
-				retornoDaLeitura.append("\nData do pedido: " + registroDoPedido[3]);
-				retornoDaLeitura.append("\nCódigo do Cliente: " + registroDoPedido[1]);
-				retornoDaLeitura.append("\nProdutos: ");
-				
-				produtosToString = registroDoPedido[5].substring(1, registroDoPedido[5].length() - 1);
-				produtos = produtosToString.split("/");
-				for (Object produto : produtos) {
-					if (!produto.toString().equals("")) {
-						produtosSplit = ((String) produto).split(":");
-						retornoDaLeitura.append("\n      Código do produto: " + produtosSplit[0] + " Valor do produto: R$ "+ decimalFormater.format(Float.valueOf(produtosSplit[1].trim().substring(0, produtosSplit[1].length() - 2))));
-					}
-				}
-				retornoDaLeitura.append("\nTotal do pedido: R$ " + decimalFormater.format(Float.valueOf(registroDoPedido[4]))+ "\n");
-			}
-			GUI.campoDeRetornoPaginacao.setText(retornoDaLeitura.toString());
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-	}
 	
 	public void recuperarArquivoGUIIndexados(int quantidadeDeListas, int tipoDeOrdenacao) {// Recupera todo o arquivo
 		String linhaAtual = null;
@@ -292,7 +248,7 @@ public class GerenciadorDeArquivo {
 				pedidos.add(new AbstractMap.SimpleEntry<>(Integer.valueOf(registroDoPedido[0]), new Pedido(Integer.valueOf(registroDoPedido[0]), new Vendedor(Integer.valueOf(registroDoPedido[2])), new Cliente(Integer.valueOf(registroDoPedido[1])), data, listaDeProdutos)));
 			}			
 
-			BTree<Float, Pedido> bTree = new BTree<>();
+			ArvoreB<Float, Pedido> bTree = new ArvoreB<>();
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			for (Entry<?, Pedido> codigoPedido : pedidos){
 				bTree.put((tipoDeOrdenacao == 1 ? codigoPedido.getValue().getCodigoCliente() : Float.valueOf(codigoPedido.getValue().getCodigoCliente()+"."+(sdf.parse(codigoPedido.getValue().getDataPedido())).getTime())), codigoPedido.getValue());
@@ -346,60 +302,6 @@ public class GerenciadorDeArquivo {
 		}
 		fecharArquivoParaLeituraIndexado();
 	}
-
-	/*
-	 * registroDoPedido:
-	 * 
-	 * 0-codigoPedido 
-	 * 1-cliente.getCodigoCliente() 
-	 * 2-vendedor.getCodigoVendedor()
-	 * 3-dataDoPedido 
-	 * 4-totalDaVenda 
-	 * 5-produtos.toString()
-	 */
-	public void recuperarArquivoPaginacaoGUI(int qtdRegistroPagina) {// Recupera arquivo com paginação
-		String informacaoLinhaAtual = null;
-		DecimalFormat decimalFormater = new DecimalFormat("#,###.00");
-		StringBuilder retornoDaLeitura = new StringBuilder();
-		String[] registroDoPedido;
-		String produtosToString;
-		String[] produtos;
-		String[] produtosSplit;
-		GUI.fimPaginacao = true;
-		try {
-			int posicaoLinhaDeOrigem = qtdRegistroPagina * GUI.paginaAtual;// Multiplica a quantidade de registro por páginas selecionada pelo usuário pelo número da página atual para saber a partir de qual linha será lido o registro 
-			int posicaoLinhaAtual = 0;
-			while (posicaoLinhaAtual < posicaoLinhaDeOrigem && (informacaoLinhaAtual = buffReader.readLine()) != null) {// Enquanto não chegar na linha calculada e ainda tiver linhas no arquivo
-				posicaoLinhaAtual++;
-			}
-			posicaoLinhaAtual = 0;
-			while ((informacaoLinhaAtual = buffReader.readLine()) != null && posicaoLinhaAtual < qtdRegistroPagina) { //Enquanto não atingir a quantidade de linhas da paginação e ainda tiver linhas
-				GUI.fimPaginacao = false;// Informa que não está na última página
-				registroDoPedido = informacaoLinhaAtual.split(";");
-
-				retornoDaLeitura.append("\nCódigo do pedido: " + registroDoPedido[0]);
-				retornoDaLeitura.append("\nCódigo do vendedor: " + registroDoPedido[2]);
-				retornoDaLeitura.append("\nData do pedido: " + registroDoPedido[3]);
-				retornoDaLeitura.append("\nCódigo do Cliente: " + registroDoPedido[1]);
-				retornoDaLeitura.append("\nProdutos: ");
-
-				produtosToString = registroDoPedido[5].substring(1, registroDoPedido[5].length() - 1);
-				produtos = produtosToString.split("/");
-				for (Object produto : produtos) {
-					if (!produto.toString().equals("")) {
-						produtosSplit = ((String) produto).split(":");
-						retornoDaLeitura.append("\n      Código do produto: " + produtosSplit[0] + " Valor do produto: R$ " + decimalFormater.format(Float.valueOf(produtosSplit[1].trim().substring(0, produtosSplit[1].length() - 2))));
-					}
-				}
-				retornoDaLeitura.append("\nTotal do pedido: R$ " + decimalFormater.format(Float.valueOf(registroDoPedido[4])) + "\n");
-				posicaoLinhaAtual++;
-			}
-			GUI.campoDeRetornoPaginacao.setText(retornoDaLeitura.toString());
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-	}
-	
 	
 	/*
 	 * registroDoPedido:
